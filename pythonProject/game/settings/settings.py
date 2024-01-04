@@ -1,7 +1,7 @@
-WIDTH = 200
-HEIGHT = 100
+WIDTH = 1280
+HEIGHT = 720
 FPS = 60
-TILESIZE = 16
+TILESIZE = 64
 
 MAP = [
     ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'],
