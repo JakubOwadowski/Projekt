@@ -3,9 +3,9 @@ from game.settings.settings import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position, groups, obstacle_sprites):
+    def __init__(self, image, position, groups, obstacle_sprites):
         super().__init__(groups)
-        self.image = pygame.transform.scale(pygame.image.load('game/graphics/tiles/dummy.png').convert_alpha(),
+        self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(),
                                             (64, 64))
         self.rect = self.image.get_rect(topleft=position)
         self.hitbox = self.rect.inflate(0, -20)
@@ -59,4 +59,4 @@ class Player(pygame.sprite.Sprite):
     def update(self):
 
         self.input()
-        self.move(4)
+        self.move(8)
