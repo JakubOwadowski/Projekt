@@ -1,4 +1,6 @@
 import pygame
+
+from game.map_objects.slash_blur import SlashBlur
 from game.settings.settings import *
 from game.utils.image_splitter import ImageSplitter
 
@@ -6,7 +8,20 @@ from game.utils.image_splitter import ImageSplitter
 class Player(pygame.sprite.Sprite):
     def __init__(self, image, position, groups, obstacle_sprites):
         super().__init__(groups)
-        self.frames = ImageSplitter().split(image)
+        self.frames = ImageSplitter().split(image, 4, [
+            "Idle down",
+            "Idle up",
+            "Idle left",
+            "Idle right",
+            "Moving down",
+            "Moving up",
+            "Moving left",
+            "Moving right",
+            "Attack down",
+            "Attack up",
+            "Attack left",
+            "Attack right"
+        ])
         self.image = pygame.transform.scale(
             pygame.image.fromstring(self.frames["Idle left"][0].tobytes(), self.frames["Idle left"][0].size,
                                     self.frames["Idle left"][0].mode).convert_alpha(),
@@ -29,7 +44,7 @@ class Player(pygame.sprite.Sprite):
         self.attack_prev_frame = 0
         self.attack_next_frame = 50
         self.attack_frame = 0
-        self.hits = 0
+        self.groups = groups
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -56,6 +71,26 @@ class Player(pygame.sprite.Sprite):
             self.attacking = True
             self.playing_attack_anim = True
             self.attack_time = pygame.time.get_ticks()
+            if self.direction.x == 0 and self.direction.y == 0:
+                if self.facing == "up":
+                    SlashBlur((self.rect.topleft[0], self.rect.topleft[1] - 64), self.facing, self.groups)
+                elif self.facing == "down":
+                    SlashBlur((self.rect.topleft[0], self.rect.topleft[1] + 64), self.facing, self.groups)
+                elif self.facing == "left":
+                    SlashBlur((self.rect.topleft[0] - 64, self.rect.topleft[1]), self.facing, self.groups)
+                elif self.facing == "right":
+                    SlashBlur((self.rect.topleft[0] + 64, self.rect.topleft[1]), self.facing, self.groups)
+            else:
+                if self.facing == "up":
+                    SlashBlur((self.rect.topleft[0], self.rect.topleft[1] - 90), self.facing, self.groups)
+                elif self.facing == "down":
+                    SlashBlur((self.rect.topleft[0], self.rect.topleft[1] + 90), self.facing, self.groups)
+                elif self.facing == "left":
+                    SlashBlur((self.rect.topleft[0] - 90, self.rect.topleft[1]), self.facing, self.groups)
+                elif self.facing == "right":
+                    SlashBlur((self.rect.topleft[0] + 90, self.rect.topleft[1]), self.facing, self.groups)
+
+
 
 
     def move(self, speed):
@@ -144,7 +179,11 @@ class Player(pygame.sprite.Sprite):
                                             (64, 64))
 
     def update(self):
-        self.input()
-        self.set_image()
+        if not self.playing_attack_anim:
+            self.input()
         self.cooldowns()
-        self.move(8)
+        self.set_image()
+        if not self.playing_attack_anim:
+            self.move(8)
+        else:
+            self.move(4)

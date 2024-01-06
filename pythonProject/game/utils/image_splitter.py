@@ -5,22 +5,7 @@ class ImageSplitter():
     def __init__(self):
         pass
 
-    def split(self, path_to_image):
-        cols = 4
-        rows = [
-            "Idle down",
-            "Idle up",
-            "Idle left",
-            "Idle right",
-            "Moving down",
-            "Moving up",
-            "Moving left",
-            "Moving right",
-            "Attack down",
-            "Attack up",
-            "Attack left",
-            "Attack right"
-        ]
+    def split(self, path_to_image, cols, rows):
         result = dict()
         with Image.open(path_to_image) as sheet:
             frame_width = sheet.width // cols
