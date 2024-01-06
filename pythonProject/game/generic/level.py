@@ -3,7 +3,7 @@ from game.settings.settings import *
 from game.map_objects.tile import Tile
 from game.map_objects.player import Player
 from game.debug.debug import debug
-from game.maps.maps import Maps
+from game.maps.maps import *
 
 
 class Level:
@@ -11,7 +11,7 @@ class Level:
 
         self.player = None
         self.display_surface = pygame.display.get_surface()
-        self.map = Maps().test_forest_map
+        self.map = test_forest_map
         self.ground_sprites = YSortCameraGroundGroup()
         self.visible_sprites = YSortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()

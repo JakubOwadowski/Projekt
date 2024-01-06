@@ -12,3 +12,4 @@ class MapReader:
             width, height = bitmap.size
             map = [pixel_data[i * width:(i + 1) * width] for i in range(height)]
         return map
+
