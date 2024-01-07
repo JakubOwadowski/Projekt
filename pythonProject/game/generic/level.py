@@ -1,9 +1,9 @@
-import pygame
+from game.map_objects.entities.enemy import Enemy
 from game.settings.settings import *
-from game.map_objects.tile import Tile
-from game.map_objects.player import Player
-from game.debug.debug import debug
+from game.map_objects.tiles.tile import Tile
+from game.map_objects.entities.player import Player
 from game.maps.maps import *
+from game.ui.ui import UI
 
 
 class Level:
@@ -16,6 +16,7 @@ class Level:
         self.visible_sprites = YSortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
         self.draw_map()
+        self.ui = UI()
 
     def draw_map(self):
 
@@ -46,12 +47,17 @@ class Level:
                 x = col_index * TILESIZE
                 y = row_index * TILESIZE
                 if col != (255, 255, 255):
-                    self.player = Player(self.map.entities_palette[col],(x, y), [self.visible_sprites], self.obstacle_sprites)
+                    if col == (0, 255, 0):
+                        self.player = Player(self.map.entities_palette[col],(x, y), [self.visible_sprites], self.obstacle_sprites)
+                    else:
+                        Enemy(self.map.entities_palette[col],(x, y), [self.visible_sprites], self.obstacle_sprites)
 
-    def draw(self):
+    def run(self):
         self.ground_sprites.custom_draw(self.player, self.map)
         self.visible_sprites.custom_draw(self.player, self.map)
+        self.visible_sprites.enemy_update(self.player)
         self.visible_sprites.update()
+        self.ui.draw(self.player)
 
 class YSortCameraGroup(pygame.sprite.Group):
     def __init__(self):
@@ -73,6 +79,11 @@ class YSortCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             offset_rect = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_rect)
+
+    def enemy_update(self, player):
+        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, "sprite_type") and sprite.sprite_type == "enemy"]
+        for enemy in enemy_sprites:
+            enemy.enemy_update(player)
 
 class YSortCameraGroundGroup(pygame.sprite.Group):
     def __init__(self):

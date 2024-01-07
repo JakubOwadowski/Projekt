@@ -11,7 +11,8 @@ forest_objects_palette = {
     }
 
 entity_palette = {
-        (0, 255, 0): "game/graphics/entities/dummy.png"
+        (0, 255, 0): "game/graphics/entities/dummy.png",
+        (255, 0, 0): "game/graphics/entities/evil_dummy.png"
     }
 
 blocking_palette = {

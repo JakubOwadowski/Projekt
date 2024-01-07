@@ -21,3 +21,4 @@ class ImageSplitter():
                     frame = sheet.crop((left, top, right, bottom))
                     result[rows[row]].append(frame)
         return result
+

@@ -1,5 +1,5 @@
 from game.generic.map import Map
-from game.map_palettes.map_palettes import *
+from game.palettes.palettes import *
 
 test_forest_map = Map(name="Test Forest",
                       ground_bitmap="game/maps/test_forest/ground.bmp",
