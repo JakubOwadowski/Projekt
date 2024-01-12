@@ -53,7 +53,7 @@ class Game:
                     memory["player"]["fury"] = 0
                     memory["player"]["lvl"] = 1
                     memory["player"]["next lvl"] = 100.0
-                    self.map = Maps["Forest East"]
+                    self.map = Maps["Birchwood"]
                     self.window = Level(self.map)
                 if event.type == LOADGAME:
                     self.load()

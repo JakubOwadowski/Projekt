@@ -37,7 +37,7 @@ class Player(game.sprites.entities.entity.Entity):
         self.playing_attack_anim = False
         self.attack_cooldown = 300
         self.visible_sprites = visible_sprites
-        self.idle_animation_speed = 0
+        self.idle_animation_speed = 0.01
         self.idle_frame = 0
         self.moving_animation_speed = 0.10
         self.moving_frame = 0
@@ -125,6 +125,7 @@ class Player(game.sprites.entities.entity.Entity):
             if self.moving_frame >= 4:
                 self.moving_frame = 0
             if self.playing_attack_anim:
+                self.idle_frame = 0
                 self.attack_frame += self.attack_animation_speed
                 if self.attack_frame >= 4:
                     self.attack_frame = 0

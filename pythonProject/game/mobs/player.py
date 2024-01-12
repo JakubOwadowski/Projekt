@@ -5,7 +5,7 @@ mob_player = {
     "strength": 10,
     "defence": 0,
     "speed": 10,
-    "graphics": "game/graphics/entities/dummy.png",
+    "graphics": "game/graphics/entities/sir_noodlehead.png",
     "max fury": 100,
     "fury decay": 0.1
 }

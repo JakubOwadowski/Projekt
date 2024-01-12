@@ -23,12 +23,12 @@ class Map:
         self.entities = entities
         self.map_reader = MapReader()
 
-    def get_layer(self, map):
-        if map == 'ground':
+    def get_layer(self, bitmap):
+        if bitmap == 'ground':
             return self.map_reader.read(self.ground_bitmap)
-        elif map == 'objects':
+        elif bitmap == 'objects':
             return self.map_reader.read(self.objects_bitmap)
-        elif map == 'blocking':
+        elif bitmap == 'blocking':
             return self.map_reader.read(self.blocking_bitmap)
         else:
             return None
@@ -42,6 +42,16 @@ class Map:
 
 # Important - the key and the name must be the same!
 Maps = {
+    "Birchwood": Map(
+        name="Birchwood",
+        ground_bitmap="game/maps/birchwood/ground.bmp",
+        objects_bitmap="game/maps/birchwood/objects.bmp",
+        blocking_bitmap="game/maps/birchwood/blocking.bmp",
+        ground_palette=forest_ground_palette,
+        objects_palette=forest_objects_palette,
+        entities=birchwood_entities
+    ),
+
     "Forest East": Map(
         name="Forest East",
         ground_bitmap="game/maps/test_forest/ground.bmp",
