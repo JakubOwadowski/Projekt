@@ -2,12 +2,13 @@ import pygame
 import sys
 import zlib
 
-from game.events import WARP, GAMEOVER, NEWGAME
+from game.events import WARP, GAMEOVER, NEWGAME, LOADGAME
 from game.settings.settings import *
 from game.windows.game_over import GameOver
 from game.windows.level import Level
 from game.maps.maps import *
 from game.memory import memory
+from game.windows.main_menu import MainMenu
 
 
 class Game:
@@ -16,8 +17,7 @@ class Game:
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
         self.map = None
-        self.window = None
-        self.load()
+        self.window = MainMenu()
         self.kek = True
         pygame.display.set_caption('Legend of Sir Noodlehead')
 
@@ -55,13 +55,15 @@ class Game:
                     memory["player"]["next lvl"] = 100.0
                     self.map = Maps["Forest East"]
                     self.window = Level(self.map)
+                if event.type == LOADGAME:
+                    self.load()
             self.window.run()
             pygame.display.update()
             self.clock.tick(FPS)
 
     def save(self):
         try:
-            save_file = open("./saves/save.sav", "wb")
+            save_file = open("./saves/save.sav", "w")
             save = ""
             save += str(self.window.player.rect.center[0]) + "\n"
             save += str(self.window.player.rect.center[1]) + "\n"
@@ -74,14 +76,17 @@ class Game:
             save += str(memory["player"]["fury"]) + "\n"
             save += str(memory["player"]["lvl"]) + "\n"
             save += str(memory["player"]["next lvl"]) + "\n"
-            save_file.write(zlib.compress(save.encode()))
+
+            save_file.write(save)
+            #save_file.write(zlib.compress(save.encode()))
         except:
             pass
 
     def load(self):
         try:
-            save_file = open("./saves/save.sav", "rb")
-            save = zlib.decompress(save_file.read()).decode()
+            save_file = open("./saves/save.sav", "r")
+            # save = zlib.decompress(save_file.read()).decode()
+            save = save_file.read()
             lines = save.split("\n")
 
             x = (int(lines[0]) // TILESIZE) + 1
