@@ -9,4 +9,4 @@ class WarpPointsSpriteGroup(pygame.sprite.Group):
     def warp_points_update(self, player):
         warp_points = [warp_point for warp_point in self.sprites()]
         for warp_point in warp_points:
-            warp_point.warp_points_update(player)
+            warp_point.warp_point_update(player)

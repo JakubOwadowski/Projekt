@@ -1,6 +1,6 @@
 import pygame
 
-from game.events import NEWGAME, LOADGAME
+from game.events.events import NEWGAME, LOADGAME
 from game.ui.button import Button
 
 
@@ -8,9 +8,15 @@ class MainMenu:
     def __init__(self):
         self.display_surface = pygame.display.get_surface()
         self.load_game_button = Button(
-            (self.display_surface.get_width() // 2, self.display_surface.get_height() // 2 + 50), "LOAD GAME", LOADGAME)
+            (self.display_surface.get_width() // 2, self.display_surface.get_height() // 2 + 50),
+            "LOAD GAME",
+            event=pygame.event.post,
+            event_args=pygame.event.Event(LOADGAME))
         self.new_game_button = Button(
-            (self.display_surface.get_width() // 2, self.display_surface.get_height() // 2 + 150), "NEW GAME", NEWGAME)
+            (self.display_surface.get_width() // 2, self.display_surface.get_height() // 2 + 150),
+            "NEW GAME",
+            event=pygame.event.post,
+            event_args=pygame.event.Event(NEWGAME))
 
     def run(self):
         self.display_surface.fill('black')

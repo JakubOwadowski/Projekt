@@ -4,28 +4,13 @@ import random
 import pygame.time
 
 from game.settings.settings import *
-import game.sprites.entities.entity
+import game.sprites.entities.generic_entity
 from game.sprites.attacks.enemy.slash_attack_enemy import SlashAttackEnemy
 
 
-class Enemy(game.sprites.entities.entity.Entity):
+class Enemy(game.sprites.entities.generic_entity.GenericEntity):
     def __init__(self, position, groups, obstacle_sprites, visible_sprites, data):
-        super().__init__(position, groups, obstacle_sprites, [
-            "Idle down",
-            "Idle up",
-            "Idle left",
-            "Idle right",
-            "Moving down",
-            "Moving up",
-            "Moving left",
-            "Moving right",
-            "Attack down",
-            "Attack up",
-            "Attack left",
-            "Attack right",
-            "Dying"
-        ], data)
-        self.dying_frame = 0
+        super().__init__(position, groups, obstacle_sprites, visible_sprites, data)
         self.attack_time = 0
         self.sprite_type = "enemy"
         self.attacking = False
@@ -39,14 +24,6 @@ class Enemy(game.sprites.entities.entity.Entity):
         self.invulnerable_cooldown = 300
         self.invulnerable_time = 0
         self.invulnerable = False
-        self.visible_sprites = visible_sprites
-        self.idle_animation_speed = 0
-        self.idle_frame = 0
-        self.moving_animation_speed = 0.10
-        self.moving_frame = 0
-        self.attack_animation_speed = 0.2
-        self.attack_frame = 0
-        self.groups = groups
 
         self.exp = data["exp"]
         self.ai = data["ai"]
@@ -60,61 +37,67 @@ class Enemy(game.sprites.entities.entity.Entity):
         self.playing_attack_anim = True
         self.attack_time = pygame.time.get_ticks()
         if self.facing == "up":
-            SlashAttackEnemy((self.rect.topleft[0], self.rect.topleft[1] - 64), self.facing, self.groups, self.visible_sprites, self.strength)
+            SlashAttackEnemy((self.rect.topleft[0], self.rect.topleft[1] - 64), self.facing, self.groups,
+                             self.visible_sprites, self.strength)
         elif self.facing == "down":
-            SlashAttackEnemy((self.rect.topleft[0], self.rect.topleft[1] + 64), self.facing, self.groups, self.visible_sprites, self.strength)
+            SlashAttackEnemy((self.rect.topleft[0], self.rect.topleft[1] + 64), self.facing, self.groups,
+                             self.visible_sprites, self.strength)
         elif self.facing == "left":
-            SlashAttackEnemy((self.rect.topleft[0] - 64, self.rect.topleft[1]), self.facing, self.groups, self.visible_sprites, self.strength)
+            SlashAttackEnemy((self.rect.topleft[0] - 64, self.rect.topleft[1]), self.facing, self.groups,
+                             self.visible_sprites, self.strength)
         elif self.facing == "right":
-            SlashAttackEnemy((self.rect.topleft[0] + 64, self.rect.topleft[1]), self.facing, self.groups, self.visible_sprites, self.strength)
+            SlashAttackEnemy((self.rect.topleft[0] + 64, self.rect.topleft[1]), self.facing, self.groups,
+                             self.visible_sprites, self.strength)
 
     def update_frames(self):
         if self.alive:
-            self.idle_frame += self.idle_animation_speed
-            if self.idle_frame >= 4:
-                self.idle_frame = 0
-            self.moving_frame += self.moving_animation_speed
-            if self.moving_frame >= 4:
-                self.moving_frame = 0
+            self.idle_animation_frame += self.idle_animation_speed
+            if self.idle_animation_frame >= self.idle_animation_frames:
+                self.idle_animation_frame = 0
+            self.moving_animation_frame += self.moving_animation_speed
+            if self.moving_animation_frame >= self.moving_animation_frames:
+                self.moving_animation_frame = 0
             if self.playing_attack_anim:
-                self.attack_frame += self.attack_animation_speed
-                if self.attack_frame >= 4:
-                    self.attack_frame = 0
+                self.attack_animation_frame += self.attack_animation_speed
+                if self.attack_animation_frame >= self.attack_animation_frames:
+                    self.attack_animation_frame = 0
                     self.playing_attack_anim = False
-        elif self.dying_frame <= 3:
-                self.dying_frame += 0.2
+        elif self.dying_animation_frame < self.dying_animation_frames:
+            self.dying_animation_frame += self.dying_animation_speed
 
     def set_image(self):
         if self.alive:
             if self.attacking and self.playing_attack_anim:  # Attacking
                 if self.facing == "up":
-                    image = self.frames["Attack up"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack up"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Attack down"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack down"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Attack left"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack left"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Attack right"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack right"][math.floor(self.attack_animation_frame)]
             elif self.direction.x == 0 and self.direction.y == 0:  # Idle
                 if self.facing == "up":
-                    image = self.frames["Idle up"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle up"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Idle down"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle down"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Idle left"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle left"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Idle right"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle right"][math.floor(self.idle_animation_frame)]
             elif self.direction.x != 0 or self.direction.y != 0:  # Moving
                 if self.facing == "up":
-                    image = self.frames["Moving up"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving up"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Moving down"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving down"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Moving left"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving left"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Moving right"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving right"][math.floor(self.moving_animation_frame)]
         else:
-            image = self.frames["Dying"][math.floor(self.dying_frame)]
+            if self.dying_animation_frame >= self.dying_animation_frames:
+                self.dying_animation_frame = self.dying_animation_frames - 1
+            image = self.frames["Dying"][math.floor(self.dying_animation_frame)]
         self.image = pygame.transform.scale(pygame.image.fromstring(
             image.tobytes(),
             image.size,
@@ -172,7 +155,7 @@ class Enemy(game.sprites.entities.entity.Entity):
             self.invulnerable = False
 
     def damage(self, attacker_strength, hit_direction, player):
-        if not self.invulnerable:
+        if not self.invulnerable and self.alive:
             self.invulnerable = True
             self.invulnerable_time = pygame.time.get_ticks()
             attack_strength = (attacker_strength - self.defence)
@@ -185,11 +168,11 @@ class Enemy(game.sprites.entities.entity.Entity):
 
     def player_collision(self, player):
         if player.hitbox.colliderect(self.hitbox) and not player.invulnerable:
-            player.damage(self.strength // 2, self.facing)
+            player.damage(self.strength, self.facing)
 
     def die(self, player):
+        super().die()
         player.grant_exp(self.exp)
-        self.alive = False
 
     def update(self):
         self.cooldowns()

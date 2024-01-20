@@ -22,3 +22,4 @@ KEY_DOWN = pygame.K_s
 KEY_LEFT = pygame.K_a
 KEY_RIGHT = pygame.K_d
 KEY_ATTACK = pygame.K_SPACE
+KEY_INTERACT = pygame.K_f

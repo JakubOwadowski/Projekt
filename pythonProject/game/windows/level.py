@@ -1,14 +1,13 @@
-import pygame
-
+from game.map_data.warp_points import stairs_random, stairs_down, stairs_up
 from game.map_data.warp_points import warp_points
 from game.sprite_groups.ground_sprite_group import GroundSpriteGroup
 from game.sprite_groups.warp_points_sprite_group import WarpPointsSpriteGroup
 from game.sprite_groups.y_sort_sprite_group import YSortSpriteGroup
 from game.sprites.entities.enemy import Enemy
 from game.sprites.misc.hitbox import Hitbox
+from game.sprites.misc.warp_point import StairsRandom, Stairs
 from game.sprites.misc.warp_point import WarpPoint
 from game.mobs.player import mob_player
-from game.settings.settings import *
 from game.sprites.tiles.tile import Tile
 from game.sprites.entities.player import Player
 from game.maps.maps import *
@@ -16,18 +15,20 @@ from game.ui.ui import UI
 
 
 class Level:
-    def __init__(self, level_map, player_position=None):
+    def __init__(self, level_map, player_position=None, ascend=False, random=True):
         # fields
+        self.init_time = 0
         self.display_surface = pygame.display.get_surface()
         self.player_position = player_position
         self.player = None
         self.map = None
         self.ui = None
-        self.init_time = pygame.time.get_ticks()
         self.text_fade_start_time = 500
         self.text_fade_in_time = 1500
         self.text_fade_out_time = 2500
         self.text_time = 3500
+        self.ascend = ascend
+        self.random = random
 
         # sprite groups
         self.ground_sprites = GroundSpriteGroup()
@@ -38,7 +39,7 @@ class Level:
         # load map
         self.load_map(level_map)
 
-    def load_map(self, map):
+    def load_map(self, map_to_load):
         # draw loading text
         font = pygame.font.Font("game/graphics/fonts/Almendra-Bold.otf", 36)
         self.display_surface.fill('black')
@@ -49,11 +50,14 @@ class Level:
         pygame.display.flip()
 
         # set fields
-        self.map = map
+        self.map = map_to_load
+        self.map.random = self.random
+        self.map.randomise(self.ascend)
         self.draw_map()
         self.ui = UI()
 
         pygame.display.flip()
+        self.init_time = pygame.time.get_ticks()
 
     def draw_map(self):
         ground_map = self.map.get_layer('ground')
@@ -66,7 +70,7 @@ class Level:
                 x = col_index * TILESIZE
                 y = row_index * TILESIZE
                 if col != (255, 255, 255):
-                    Tile(self.map.ground_palette[col], (x, y), [self.ground_sprites])
+                    Tile(self.map.ground_palette[col], (x, y), (self.ground_sprites, ))
 
         # draw objects
         for row_index, row in enumerate(objects_map):
@@ -74,7 +78,7 @@ class Level:
                 x = col_index * TILESIZE
                 y = row_index * TILESIZE
                 if col != (255, 255, 255):
-                    Tile(self.map.objects_palette[col], (x, y), [self.visible_sprites])
+                    Tile(self.map.objects_palette[col], (x, y), (self.visible_sprites, ))
 
         # draw blocking
         for row_index, row in enumerate(blocking_map):
@@ -82,7 +86,7 @@ class Level:
                 x = col_index * TILESIZE
                 y = row_index * TILESIZE
                 if col != (255, 255, 255):
-                    Hitbox((x, y), [self.obstacle_sprites])
+                    Hitbox((x, y), (self.obstacle_sprites, ))
 
         # draw entities
         for i in range(0, len(self.map.entities)):
@@ -110,7 +114,33 @@ class Level:
             if self.map == warp_points[i][0]:
                 x = (warp_points[i][1][0] - 1) * TILESIZE
                 y = (warp_points[i][1][1] - 1) * TILESIZE
-                WarpPoint((x, y), [self.warp_points], warp_points[i][2], warp_points[i][3])
+                WarpPoint((x, y), (self.warp_points, ), warp_points[i][2], warp_points[i][3])
+
+        # draw stairs
+        for row_index, row in enumerate(ground_map):
+            for col_index, col in enumerate(row):
+                x = col_index * TILESIZE
+                y = row_index * TILESIZE
+                if col == (150, 100, 50):
+                    for stairs in stairs_random:
+                        if stairs[0].name == self.map.name:
+                            StairsRandom((x, y), (self.warp_points, ), stairs[1])
+                    for stairs in stairs_up:
+                        if stairs[2].name == self.map.name:
+                            Stairs((x, y), (self.warp_points, ), stairs[0], stairs[1])
+                if col == (50, 100, 150):
+                    for stairs in stairs_random:
+                        if stairs[1].name == self.map.name:
+                            StairsRandom((x, y), (self.warp_points, ), stairs[0], ascend=True)
+                    for stairs in stairs_down:
+                        if stairs[2].name == self.map.name:
+                            Stairs((x, y), (self.warp_points, ), stairs[0], stairs[1])
+                for stairs in stairs_down:
+                    if stairs[0].name == self.map.name:
+                        StairsRandom((x, y), (self.warp_points, ), stairs[2])
+                for stairs in stairs_up:
+                    if stairs[0].name == self.map.name:
+                        StairsRandom((x, y), (self.warp_points, ), stairs[2], ascend=True)
 
     def draw_location_name(self):
         current_time = pygame.time.get_ticks() - self.init_time
@@ -128,8 +158,16 @@ class Level:
             else:
                 alpha = 255
             bg_surface.set_alpha(alpha)
-            bg_surface.blit(text_surface, (bg_surface.get_width() // 2 - text_surface.get_width() // 2, bg_surface.get_height() // 2 - 24))
-            self.display_surface.blit(bg_surface, (self.display_surface.get_width() // 2 - bg_surface.get_width() // 2, 64 - bg_surface.get_height() // 2))
+            bg_surface.blit(
+                text_surface,
+                (bg_surface.get_width() // 2 - text_surface.get_width() // 2,
+                 bg_surface.get_height() // 2 - 24)
+            )
+            self.display_surface.blit(
+                bg_surface,
+                (self.display_surface.get_width() // 2 - bg_surface.get_width() // 2,
+                 64 - bg_surface.get_height() // 2)
+            )
 
     def run(self):
         self.ground_sprites.custom_draw(self.player, self.map)
@@ -139,4 +177,3 @@ class Level:
         self.warp_points.warp_points_update(self.player)
         self.draw_location_name()
         self.ui.draw(self.player)
-

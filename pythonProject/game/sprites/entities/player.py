@@ -2,31 +2,16 @@ import math
 
 import pygame.event
 
-import game.sprites.entities.entity
-from game.events import GAMEOVER
-from game.memory import memory
+import game.sprites.entities.generic_entity
+from game.events.events import GAMEOVER
+from game.memory.memory import memory
 from game.sprites.attacks.player.slash_attack_player import SlashAttackPlayer
 from game.settings.settings import *
 
 
-class Player(game.sprites.entities.entity.Entity):
+class Player(game.sprites.entities.generic_entity.GenericEntity):
     def __init__(self, position, groups, obstacle_sprites, visible_sprites, data):
-        super().__init__(position, groups, obstacle_sprites, [
-            "Idle down",
-            "Idle up",
-            "Idle left",
-            "Idle right",
-            "Moving down",
-            "Moving up",
-            "Moving left",
-            "Moving right",
-            "Attack down",
-            "Attack up",
-            "Attack left",
-            "Attack right",
-            "Dying"
-        ], data)
-        self.dying_frame = 0
+        super().__init__(position, groups, obstacle_sprites, visible_sprites, data)
         self.invulnerable_cooldown = 300
         self.hit_direction = None
         self.invulnerable_time = 0
@@ -36,15 +21,6 @@ class Player(game.sprites.entities.entity.Entity):
         self.attacking = False
         self.playing_attack_anim = False
         self.attack_cooldown = 300
-        self.visible_sprites = visible_sprites
-        self.idle_animation_speed = 0.01
-        self.idle_frame = 0
-        self.moving_animation_speed = 0.10
-        self.moving_frame = 0
-        self.attack_animation_speed = 0.2
-        self.attack_frame = 0
-
-        self.groups = groups
         self.current_fury = memory["player"]["fury"]
         self.max_fury = data["max fury"]
         self.level = memory["player"]["lvl"]
@@ -99,10 +75,10 @@ class Player(game.sprites.entities.entity.Entity):
             attack_strength = (enemy_strength - self.defence)
             if attack_strength > 0:
                 self.current_health -= attack_strength
+            self.current_fury -= 10
+            if self.current_fury < 0:
+                self.current_fury = 0
             self.hit_direction = hit_direction
-
-    def die(self):
-        self.alive = False
 
     def grant_exp(self, exp):
         self.exp += exp
@@ -113,27 +89,28 @@ class Player(game.sprites.entities.entity.Entity):
             self.exp = 0
             self.base_health *= 1.5
             self.current_health = self.base_health
-            self.next_level *= 1.7
+            self.next_level *= 2
             self.strength += 2
 
     def update_frames(self):
         if self.alive:
-            self.idle_frame += self.idle_animation_speed
-            if self.idle_frame >= 4:
-                self.idle_frame = 0
-            self.moving_frame += self.moving_animation_speed
-            if self.moving_frame >= 4:
-                self.moving_frame = 0
+            self.idle_animation_frame += self.idle_animation_speed
+            if self.idle_animation_frame >= self.idle_animation_frames:
+                self.idle_animation_frame = 0
+            self.moving_animation_frame += self.moving_animation_speed
+            if self.moving_animation_frame >= self.moving_animation_frames:
+                self.moving_animation_frame = 0
             if self.playing_attack_anim:
-                self.idle_frame = 0
-                self.attack_frame += self.attack_animation_speed
-                if self.attack_frame >= 4:
-                    self.attack_frame = 0
+                self.idle_animation_frame = 0
+                self.attack_animation_frame += self.attack_animation_speed
+                if self.attack_animation_frame >= self.attack_animation_frames:
+                    self.attack_animation_frame = 0
                     self.playing_attack_anim = False
-        elif self.dying_frame <= 3:
-            self.dying_frame += 0.2
-        elif self.dying_frame > 3:
-            pygame.event.post(pygame.event.Event(GAMEOVER))
+        elif self.dying_animation_frame < self.dying_animation_frames:
+            self.dying_animation_frame += self.dying_animation_speed
+            if self.dying_animation_frame >= self.dying_animation_frames:
+                self.dying_animation_frame = self.dying_animation_frames - 1
+                pygame.event.post(pygame.event.Event(GAMEOVER))
 
     def cooldowns(self):
         current_time = pygame.time.get_ticks()
@@ -148,33 +125,33 @@ class Player(game.sprites.entities.entity.Entity):
         if self.alive:
             if self.attacking and self.playing_attack_anim:  # Attacking
                 if self.facing == "up":
-                    image = self.frames["Attack up"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack up"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Attack down"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack down"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Attack left"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack left"][math.floor(self.attack_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Attack right"][math.floor(self.attack_frame)]
+                    image = self.frames["Attack right"][math.floor(self.attack_animation_frame)]
             elif self.direction.x == 0 and self.direction.y == 0:  # Idle
                 if self.facing == "up":
-                    image = self.frames["Idle up"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle up"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Idle down"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle down"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Idle left"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle left"][math.floor(self.idle_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Idle right"][math.floor(self.idle_frame)]
+                    image = self.frames["Idle right"][math.floor(self.idle_animation_frame)]
             elif self.direction.x != 0 or self.direction.y != 0:  # Moving
                 if self.facing == "up":
-                    image = self.frames["Moving up"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving up"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "down":
-                    image = self.frames["Moving down"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving down"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "left":
-                    image = self.frames["Moving left"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving left"][math.floor(self.moving_animation_frame)]
                 elif self.facing == "right":
-                    image = self.frames["Moving right"][math.floor(self.moving_frame)]
+                    image = self.frames["Moving right"][math.floor(self.moving_animation_frame)]
         else:
-            image = self.frames["Dying"][math.floor(self.dying_frame)]
+            image = self.frames["Dying"][math.floor(self.dying_animation_frame)]
         self.image = pygame.transform.scale(pygame.image.fromstring(
             image.tobytes(),
             image.size,
