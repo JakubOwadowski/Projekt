@@ -9,8 +9,8 @@ from game.maps.maps import *
 from game.memory.memory import memory
 from game.windows.main_menu import MainMenu
 
-
 class Game:
+
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -43,7 +43,8 @@ class Game:
                     memory["player"]["fury"] = self.window.player.current_fury
                     memory["player"]["lvl"] = self.window.player.level
                     memory["player"]["next lvl"] = self.window.player.next_level
-                    self.window = Level(event.dict["destination map"], player_position=event.dict["destination position"])
+                    self.window = Level(event.dict["destination map"],
+                                        player_position=event.dict["destination position"])
                 elif event.type == RANDOMWARP:
                     memory["player"]["hp"] = self.window.player.current_health
                     memory["player"]["base hp"] = self.window.player.base_health
@@ -62,7 +63,7 @@ class Game:
                     memory["player"]["lvl"] = 1
                     memory["player"]["next lvl"] = 100.0
                     self.window = Level(Maps["Birchwood"])
-                    #self.window = Level(Maps["Graveyard Underground Level 1"])
+                    # self.window = Level(Maps["Graveyard Underground Level 1"])
                 elif event.type == LOADGAME:
                     self.load()
             self.window.run()
@@ -108,8 +109,3 @@ class Game:
             self.window = Level(Maps[lines[2].strip("\n")], (x, y), random=False)
         except:
             self.window = Level(Maps["Birchwood"])
-
-
-if __name__ == '__main__':
-    game = Game()
-    game.run()
